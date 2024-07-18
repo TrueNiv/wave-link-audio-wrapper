@@ -393,7 +393,7 @@ def on_press(key):
                 decrease_output_volume(Mixer.Local)
             elif key == keyboard.Key.f15:
                 current_channel += 1
-                showPopup(f"{display_names[current_channel]}", "Changed Channel")
+                showPopup(f"{display_names[current_channel]} (󰕾 {volumes[current_channel]})", "Changed Channel")
         else:
             if key == keyboard.Key.f13:
                 set_input_volume(Mixer.Local, channel_list[current_channel],volumes[current_channel] + step)
@@ -403,7 +403,7 @@ def on_press(key):
                 current_channel += 1
                 if current_channel > 8:
                     current_channel = 0
-                showPopup(f"{display_names[current_channel]}", "Changed Channel")
+                showPopup(f"{display_names[current_channel]} (󰕾 {volumes[current_channel]})", "Changed Channel")
 
     except Exception as e:
         logging.error(f"Error handling key press: {e}")
