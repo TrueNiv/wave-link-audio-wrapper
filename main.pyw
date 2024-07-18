@@ -1,6 +1,7 @@
 from pynput import keyboard
 from configparser import ConfigParser
 from popup import showPopup, popupRoot
+import volumesaver
 import json
 import websocket
 import time
@@ -43,6 +44,12 @@ class Output:
 current_volume = None
 is_muted = None
 config = ConfigParser()
+volumes = volumesaver.read_volumes()
+device_numbers = {"Output": 0, Input.Game: 1, Input.SFX: 2, Input.Music: 3, Input.System: 4, Input.VoiceChat: 5, Input.Browser: 6, Input.Aux2: 7, Input.Aux1: 8}
+channel_list = ["Output", Input.Game, Input.SFX, Input.Music, Input.System, Input.VoiceChat, Input.Browser, Input.Aux2, Input.Aux1]
+display_names = ["Monitor Mix", "Game", "SFX", "Music", "System", "Voice Chat", "Browser", "Aux2", "Aux1"]
+current_channel = 0
+savecount = 0
 
 # Read config file
 config.read("config.ini")
@@ -61,7 +68,7 @@ logging.basicConfig(
 
 # WebSocket connection handler
 def on_message(ws, message):
-    global current_volume, is_muted
+    global current_volume, is_muted, volumes
     response = json.loads(message)
     # Operations without method key
     if "result" in response:
@@ -100,27 +107,35 @@ def on_message(ws, message):
                 case Input.System:
                     logging.debug(f"System volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "System Volume")
+                    volumes[device_numbers[Input.System]] = response['params']['value']
                 case Input.Music:
                     logging.debug(f"Music volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "Music Volume")
+                    volumes[device_numbers[Input.Music]] = response['params']['value']
                 case Input.Browser:
                     logging.debug(f"Browser volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "Browser Volume")
+                    volumes[device_numbers[Input.Browser]] = response['params']['value']
                 case Input.VoiceChat:
                     logging.debug(f"Voice Chat volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "Voice Chat Volume")
+                    volumes[device_numbers[Input.VoiceChat]] = response['params']['value']
                 case Input.SFX:
                     logging.debug(f"SFX volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "SFX Volume")
+                    volumes[device_numbers[Input.SFX]] = response['params']['value']
                 case Input.Game:
                     logging.debug(f"Game volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "Game Volume")
+                    volumes[device_numbers[Input.Game]] = response['params']['value']
                 case Input.Aux1:
                     logging.debug(f"Aux 1 volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "Aux 1 Volume")
+                    volumes[device_numbers[Input.Aux1]] = response['params']['value']
                 case Input.Aux2:
                     logging.debug(f"Aux 2 volume changed to: {response['params']['value']}")
                     showPopup(f"󰕾 {response['params']['value']}", "Aux 2 Volume")
+                    volumes[device_numbers[Input.Aux2]] = response['params']['value']
     # Output Volumes
     elif "method" in response and response["method"] == "outputVolumeChanged":
         if response["params"]["mixerID"] == Mixer.Local:
@@ -369,13 +384,27 @@ ws.thread.start()
 
 # Handle keyboard presses through pynput
 def on_press(key):
+    global current_channel
     try:
-        if key == keyboard.Key.f13:
-            increase_output_volume(Mixer.Local)
-        elif key == keyboard.Key.f14:
-            decrease_output_volume(Mixer.Local)
-        elif key == keyboard.Key.f15:
-            toggle_output_mute(Mixer.Local)
+        if current_channel == 0:
+            if key == keyboard.Key.f13:
+                increase_output_volume(Mixer.Local)
+            elif key == keyboard.Key.f14:
+                decrease_output_volume(Mixer.Local)
+            elif key == keyboard.Key.f15:
+                current_channel += 1
+                showPopup(f"{display_names[current_channel]}", "Changed Channel")
+        else:
+            if key == keyboard.Key.f13:
+                set_input_volume(Mixer.Local, channel_list[current_channel],volumes[current_channel] + step)
+            elif key == keyboard.Key.f14:
+                set_input_volume(Mixer.Local, channel_list[current_channel],volumes[current_channel] - step)
+            elif key == keyboard.Key.f15:
+                current_channel += 1
+                if current_channel > 8:
+                    current_channel = 0
+                showPopup(f"{display_names[current_channel]}", "Changed Channel")
+
     except Exception as e:
         logging.error(f"Error handling key press: {e}")
     
@@ -385,6 +414,20 @@ listener.start()
 
 # Start WebSocket listener
 if __name__ == "__main__":
+    def update_volumes():
+        global savecount, volumes
+        if savecount < 1800:
+            savecount += 1
+        else:
+            volumesaver.write_volumes(volumes)
+            savecount = 0
+        popupRoot.after(1000, update_volumes)
+
+
+
     logging.info("Script started")
+
+    # Schedule saving of volumes through the main loop
+    popupRoot.after(1000, update_volumes)
     # Start the Tkinter main loop for the volume popups
     popupRoot.mainloop()
