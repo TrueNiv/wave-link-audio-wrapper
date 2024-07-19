@@ -17,11 +17,7 @@ def read_volumes():
 
 
 def write_volumes(volumes):
-    filename = 'volumes.csv'
-    if '_MEIPASS2' in os.environ:
-        filename = os.path.join(os.environ['_MEIPASS2'], filename)
-
-    with open('volumes.csv', 'w') as csvfile:
+    with open(r'C:\PATH\volumes.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|')
 
         writer.writerow(volumes)

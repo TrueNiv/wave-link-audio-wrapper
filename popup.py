@@ -13,11 +13,8 @@ popupRoot = tk.Tk()
 popupRoot.withdraw()
 
 # Read config file
-configname = "config.ini"
-if '_MEIPASS2' in os.environ:
-    filename = os.path.join(os.environ['_MEIPASS2'], configname)
 config = ConfigParser()
-config.read(configname)
+config.read(r"C:\PATH\config.ini")
 
 # Set variables from config
 popup_duration = int(config.get("main", "popup_duration"))

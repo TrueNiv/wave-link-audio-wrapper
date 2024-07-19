@@ -52,10 +52,7 @@ current_channel = 0
 savecount = 0
 
 # Read config file
-configname = "config.ini"
-if '_MEIPASS2' in os.environ:
-    filename = os.path.join(os.environ['_MEIPASS2'], configname)
-config.read(configname)
+config.read(r"C:\PATH\config.ini")
 
 # Set variables from config
 step = int(config.get("main", "step"))
@@ -63,7 +60,7 @@ websocket_url = str(config.get("main", "websocket_url"))
 
 # Initialize logging
 logging.basicConfig(
-    filename="latest.log",
+    filename=r"C:\PATH\latest.log",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
     filemode="w"
