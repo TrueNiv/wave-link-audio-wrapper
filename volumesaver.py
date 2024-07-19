@@ -1,8 +1,13 @@
 import csv
+import os
 
 
 def read_volumes():
-    with open ('volumes.csv') as csvfile:
+    filename = 'volumes.csv'
+    if '_MEIPASS2' in os.environ:
+        filename = os.path.join(os.environ['_MEIPASS2'], filename)
+
+    with open (filename) as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in spamreader:
             out = []
@@ -12,7 +17,9 @@ def read_volumes():
 
 
 def write_volumes(volumes):
-    # Only do this every 5 minutes, counting this way to avoid tkinter causing lag because the entered waiting time is too high
+    filename = 'volumes.csv'
+    if '_MEIPASS2' in os.environ:
+        filename = os.path.join(os.environ['_MEIPASS2'], filename)
 
     with open('volumes.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|')

@@ -47,12 +47,15 @@ config = ConfigParser()
 volumes = volumesaver.read_volumes()
 device_numbers = {"Output": 0, Input.Game: 1, Input.SFX: 2, Input.Music: 3, Input.System: 4, Input.VoiceChat: 5, Input.Browser: 6, Input.Aux2: 7, Input.Aux1: 8}
 channel_list = ["Output", Input.Game, Input.SFX, Input.Music, Input.System, Input.VoiceChat, Input.Browser, Input.Aux2, Input.Aux1]
-display_names = ["Monitor Mix", "Game", "SFX", "Music", "System", "Voice Chat", "Browser", "Aux2", "Aux1"]
+display_names = ["Output", "Game", "SFX", "Music", "System", "Voice Chat", "Browser", "Aux2", "Aux1"]
 current_channel = 0
 savecount = 0
 
 # Read config file
-config.read("config.ini")
+configname = "config.ini"
+if '_MEIPASS2' in os.environ:
+    filename = os.path.join(os.environ['_MEIPASS2'], configname)
+config.read(configname)
 
 # Set variables from config
 step = int(config.get("main", "step"))
@@ -415,6 +418,7 @@ listener.start()
 # Start WebSocket listener
 if __name__ == "__main__":
     def update_volumes():
+        # Only do this every half hour
         global savecount, volumes
         if savecount < 1800:
             savecount += 1
