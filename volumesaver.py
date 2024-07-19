@@ -3,7 +3,7 @@ import os
 
 
 def read_volumes():
-    filename = 'volumes.csv'
+    filename = r'C:\PATH\volumes.csv'
     if '_MEIPASS2' in os.environ:
         filename = os.path.join(os.environ['_MEIPASS2'], filename)
 
